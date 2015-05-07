@@ -4,7 +4,27 @@ This project collects simple metrics on a regular interval and submits
 to CA APM's EPAgent via the RESTful interface.
 
  --with-http_stub_status_module flag is required in the nginx -V output
- 
+
+Ensure the status URL is enabled.  In your active nginx config file, 
+ensure a status URL location is enabled under your server block.  
+
+e.g.: 
+server {
+#add to existing server block
+
+location /nginx_status {
+    # activate stub_status module
+    stub_status on;
+ 
+    # do not log status polling
+    access_log off;
+ 
+    # restrict access to local only
+    allow 127.0.0.1;
+    deny all;
+   }
+} 
+
 
 The metrics will be default be reported under 'nginx|<hostname>|...'.  As
 multiple hosts can report to a single EPAgent's RESTful interace.  The inclusion
