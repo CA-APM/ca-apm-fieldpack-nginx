@@ -1,3 +1,22 @@
+/* 
+This node.js project collects performance metrics from an nginx stats URL.
+This project collects simple metrics on a regular interval and submits
+to CA APM's EPAgent via the RESTful interface.
+
+ --with-http_stub_status_module flag is required in the nginx -V output
+ 
+
+The metrics will be default be reported under 'nginx|<hostname>|...'.  As
+multiple hosts can report to a single EPAgent's RESTful interace.  The inclusion
+the <hostname> in the metric path gives a opportunity to disambiguate those
+usages.
+
+Usage: node index
+The program will run in a loop polling the nginx status URL on the interval
+defined in the param.json file.  Those metrics will be sent to the epagent
+also specified in that file.
+*/
+
 var _http = require('http');
 var _https = require('https');
 var _os = require('os');
