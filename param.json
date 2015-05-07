@@ -1,0 +1,6 @@
+{
+	"pollInterval" : 1000,
+	"url" : "http://127.0.0.1/nginx_status",
+	"epahost" : "127.0.0.1",
+	"epaport" : 9191
+}
