@@ -148,7 +148,7 @@ Version | Author | Comment
 1.0 | Tim McGaughey | First version of the field pack.
 
 ## Support URL
-https://github.com/tmcgaughey/nginx-epa
+https://github.com/tmcgaughey/nginx-epa/issues
 
 ## Short Description
 Monitor nginx
