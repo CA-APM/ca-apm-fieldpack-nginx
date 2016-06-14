@@ -2,17 +2,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ca.apm.fieldpacks</groupId>
-	<artifactId>ca-apm-acc-api-scripts</artifactId>
+	<artifactId>nginx-epa</artifactId>
 	<version>1.0.0</version>
 	<packaging>pom</packaging>
 
 	<build>
-
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-
 				<executions>
 					<execution>
 						<id>create-distribution</id>
@@ -21,17 +19,13 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
-
 							<descriptors>
 								<descriptor>assembly.xml</descriptor>
 							</descriptors>
-
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-
-
 			<plugin>
 				<groupId>com.ruleoftech</groupId>
 				<artifactId>markdown-page-generator-plugin</artifactId>
@@ -48,13 +42,7 @@
 					<inputDirectory>${basedir}</inputDirectory>
 					<outputDirectory>${basedir}</outputDirectory>
 				</configuration>
-
 			</plugin>
-
-
 		</plugins>
-
-
 	</build>
-
 </project>
