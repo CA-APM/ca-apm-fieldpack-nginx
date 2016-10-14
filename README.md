@@ -1,4 +1,4 @@
-# nginx monitor (1.0)
+# nginx monitor (2.0)
 
 
 # Description
@@ -16,7 +16,7 @@ This has been tested with APM 9.7.1.  An EPAgent 9.7.1 or greater is required fo
 `node v0.10.38`
 
 ## Limitations
-This has not been tested with the commercial versions of nginx.  Commercial versions are supposed to publish additional metrics at the status URL.
+nginx open source with stub status module or nginx plus with the status module enabled
 
 ## License
 [Eclipse Public License 1.0](https://www.eclipse.org/legal/epl-v10.html "Eclipse Public License")
@@ -29,6 +29,8 @@ file in this repository.  Licenses may vary by repository.  Your download and us
 Follow the steps below in prerequisites, installation, configuration, and usage to get up and running with nginx metrics today!
 
 ## Prerequisites
+
+### Open Source nginx
 Ensure that nginx has the `--with-http_stub_status_module` flag by executing:
 
     nginx -V
@@ -59,14 +61,18 @@ If you test the URL, the expected output should look similar to the following:
     112 112 121
     Reading: 0 Writing: 1 Waiting: 0
 
+### nginx Plus
+nginx Plus should use the status plugin: [live activity monitoring](https://www.nginx.com/products/live-activity-monitoring/)
+
+If you test the status URL, the expected output is a JSON stream similar to the one at the [nginx demo site](http://demo.nginx.com/status)
+
+### RESTful EPA
 A [RESTful CA APM EPAgent](https://wiki.ca.com/display/APMDEVOPS97/EPAgent+Overview) must be installed and the [HTTP port must be set](https://wiki.ca.com/display/APMDEVOPS97/Configure+the+EPAgent+RESTful+Interface).  The host and port running the EPAgent should be reachable from the host that will be running this nginx monitoring script.
 
 ## Dependencies
-APM EPAgent 9.7.1+
+ - APM EPAgent 9.7.1+
+ - node.js
 
-node.js
-
-nginx built with the `--with-http_stub_status_module` flag
 
 ## Installation
 Copy the **index.js** and **param.json** files to a convenient location.
@@ -79,13 +85,13 @@ From there, execute:
 Edit the **param.json** file to designate:
 
  - The status URL specified in the prerequisites 
- - The interval at which to poll that URL  
+ - The interval at which to poll that URL in milliseconds
  - The host and port the CA APM EPAgent is using for HTTP
 
 Here is a sample **param.json** file with nginx and the EPAgent both running on the localhost:
 
     {
-    	"pollInterval" : 1000,
+    	"pollInterval" : 5000,
     	"url" : "http://127.0.0.1/nginx_status",
     	"epahost" : "127.0.0.1",
     	"epaport" : 9191
@@ -113,7 +119,50 @@ plus the following metrics for connections:
     nginx|hostname|Connections:Handled Connections
     nginx|hostname|Connections:Dropped Connections
 
+With nginx Plus, the reported metrics are:
+    nginx|hostname:Average Requests per Connection 
+    nginx|hostname:Requests per Interval
+    
+    nginx|hostname|Connections:Active
+    nginx|hostname|Connections:Idle
+    nginx|hostname|Connections:Handled Connections
+    nginx|hostname|Connections:Dropped Connections
 
+    nginx|hostname|SSL:Handshakes per Interval
+    nginx|hostname|SSL:Handshakes Failed per Interval
+    nginx|hostname|SSL:Session Reuses per Interval
+
+    nginx|hostname|Server Zone|zone:Requests per Interval
+    nginx|hostname|Server Zone|zone:Responses per Interval
+    nginx|hostname|Server Zone|zone:Discarded per Interval
+    nginx|hostname|Server Zone|zone:Processing per Interval
+	nginx|hostname|Server Zone|zone:Sent Bytes per Interval
+	nginx|hostname|Server Zone|zone:Received Bytes per Interval
+	nginx|hostname|Server Zone|zone|Responses:1xx per Interval
+	nginx|hostname|Server Zone|zone|Responses:2xx per Interval
+	nginx|hostname|Server Zone|zone|Responses:3xx per Interval
+	nginx|hostname|Server Zone|zone|Responses:4xx per Interval
+	nginx|hostname|Server Zone|zone|Responses:5xx per Interval
+
+	nginx|hostname|Upstreams|group|server:Backup
+	nginx|hostname|Upstreams|group|server:State
+	nginx|hostname|Upstreams|group|server:Requests per Interval
+	nginx|hostname|Upstreams|group|server:Weight
+	nginx|hostname|Upstreams|group|server:Active Connections
+	nginx|hostname|Upstreams|group|server:Sent Bytes per Interval
+	nginx|hostname|Upstreams|group|server:Received Bytes per Interval
+	nginx|hostname|Upstreams|group|server:Failures per Interval
+	nginx|hostname|Upstreams|group|server:Unavailables per Interval
+	nginx|hostname|Upstreams|group|server|Health Checks:Checks per Interval
+	nginx|hostname|Upstreams|group|server|Health Checks:Failures per Interval
+	nginx|hostname|Upstreams|group|server|Health Checks:Unhealthy per Interval
+	nginx|hostname|Upstreams|group|server|Responses:1xx per Interval
+	nginx|hostname|Upstreams|group|server|Responses:2xx per Interval
+	nginx|hostname|Upstreams|group|server|Responses:3xx per Interval
+	nginx|hostname|Upstreams|group|server|Responses:4xx per Interval
+	nginx|hostname|Upstreams|group|server|Responses:5xx per Interval
+	
+	
 ## Custom Management Modules
 None provided.
 
@@ -146,12 +195,13 @@ Changes for each version of the field pack.
 Version | Author | Comment
 --------|--------|--------
 1.0 | Tim McGaughey | First version of the field pack.
+2.0 | Tim McGaughey | Added support for nginx Plus.
 
 ## Support URL
-https://github.com/tmcgaughey/nginx-epa
+https://github.com/tmcgaughey/nginx-epa/issues
 
 ## Short Description
-Monitor nginx
+Monitor nginx web server
 
 ## Categories
-Middleware/ESB
+Packaged Applications
