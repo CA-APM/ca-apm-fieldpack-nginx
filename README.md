@@ -56,7 +56,9 @@ An EPAgent 9.7.1 or greater is required for the REST interface.
 ```
 
 4. Test the URL.
+
    The output should look similar to this example:
+   
 ```
     Active connections: 1
     server accepts handled requests
@@ -71,11 +73,11 @@ An EPAgent 9.7.1 or greater is required for the REST interface.
 
 The JSON stream output should look similar to the output shown on the [nginx demo site.](http://demo.nginx.com/status.html)
 
-# Install and Configure the CA APM RESTful EPAgent
+# Install and Configure the CA APM EPAgent with RESTful Interface
 
 1. Install the CA APM EPAgent.
 
-Find the CA APM EPAgent documentation on [the CA APM documentation wiki.](https://docops.ca.com)
+   Find the CA APM EPAgent documentation on [the CA APM documentation wiki.](https://docops.ca.com)
 
 2. Configure the EPAgent RESTful interface.
 3. Set the HTTP port.
@@ -110,9 +112,9 @@ Here is a sample param.json file with nginx and the EPAgent both running on the 
 
     `node index`
 	
-Output appears on the console and in the Investigator.
+  Output appears on the console and in the Investigator.
 
-# Metrics
+# nginx Metrics
 The nginx Monitor reports these request metrics:
 ```
     nginx|hostname:Average Requests per Connection 
@@ -129,6 +131,7 @@ The nginx Monitor reports these connection metrics:
     nginx|hostname|Connections:Dropped Connections
 ```
 
+# NGINX Plus Metrics
 The nginx Monitor with NGINX Plus reports these metrics:
 ```
     nginx|hostname:Average Requests per Connection 
