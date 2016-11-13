@@ -12,21 +12,20 @@ The nginx Monitor has been tested with CA APM 9.7.1.
 An EPAgent 9.7.1 or greater is required for the REST interface.
 
 # Dependencies
-Requires an EPAgent 9.7.1 or greater for the REST interface.
+* Requires an EPAgent 9.7.1 or greater for the REST interface.
 
-Requires nginx open source with stub status module or nginx plus with the status module enabled.
+* Requires either of these nginx applications:
+ - open source nginx with the stub status module enabled 
+ - NGINX Plus with the status module enabled
 
 # Supported Third Party Versions
-`nginx 1.6.3 --with-http_stub_status_module`
-
-`node v0.10.38`
+* nginx 1.6.3 --with-http_stub_status_module
+* node v0.10.38
 
 # License
 [Eclipse Public License 1.0](https://www.eclipse.org/legal/epl-v10.html "Eclipse Public License")
 
-# Prerequisites
-
-## Open Source nginx
+# Configure Open Source nginx
 
 1. Ensure that nginx has the `--with-http_stub_status_module` flag by executing this command:
 
@@ -55,6 +54,7 @@ Requires nginx open source with stub status module or nginx plus with the status
            deny all;
       }
 ```
+
 4. Test the URL.
    The output should look similar to this example:
 ```
@@ -64,32 +64,32 @@ Requires nginx open source with stub status module or nginx plus with the status
     Reading: 0 Writing: 1 Waiting: 0
 ```
 
-# Monitor NGINX Plus
-Add NGINX Plus monitoring to the nginx Monitor capabilities.
+# Configure NGINX Plus
 
-1.Download the NGINX Plus [live activity monitoring](https://www.nginx.com/products/live-activity-monitoring/) status plug-in.
+1. Download the NGINX Plus [live activity monitoring](https://www.nginx.com/products/live-activity-monitoring/) status plug-in.
 2. Test the status URL.
 
-The JSON stream output should looks similar to the output shown on the [nginx demo site.](http://demo.nginx.com/status)
+The JSON stream output should look similar to the output shown on the [nginx demo site.](http://demo.nginx.com/status.html)
 
-# Install and Configure the RESTful EPAgent
+# Install and Configure the CA APM RESTful EPAgent
 
 1. Install the CA APM EPAgent.
+
 Find the CA APM EPAgent documentation on [the CA APM documentation wiki.](https://docops.ca.com)
+
 2. Configure the EPAgent RESTful interface.
 3. Set the HTTP port.
-The host and port running the EPAgent should be reachable from the host that is running the nginx monitoring script.
+4. Be sure that the host running the nginx monitoring scrip can reach the host and port running the EPAgent.
 
-# Installation
+# Configure the nginx Monitor
 
 1. Copy the nginx Monitor index.js and param.json files to a convenient location.
 
-2, From the same location, execute this command:
+2. From the same location, execute this command:
 
     `npm install request`
 
-# Configuration
-* Edit the param.json file to provide this information:
+3. Edit the param.json file to provide this information:
 
   - The status URL specified in the prerequisites 
   - The interval at which to poll that URL in milliseconds
@@ -129,7 +129,7 @@ The nginx Monitor reports these connection metrics:
     nginx|hostname|Connections:Dropped Connections
 ```
 
-The nginx Monitor with nginx Plus reportes these metrics:
+The nginx Monitor with NGINX Plus reports these metrics:
 ```
     nginx|hostname:Average Requests per Connection 
     nginx|hostname:Requests per Interval
@@ -201,5 +201,5 @@ Changes for each monitor version.
 Version | Author | Comment
 --------|--------|--------
 1.0 | Tim McGaughey | First version of the monitor.
-2.0 | Tim McGaughey | Added support for nginx Plus.
+2.0 | Tim McGaughey | Added support for NGINX Plus.
 
