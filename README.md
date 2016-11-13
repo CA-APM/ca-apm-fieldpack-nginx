@@ -34,7 +34,8 @@ An EPAgent 9.7.1 or greater is required for the REST interface.
    The flag should appear in the output.
 
 2. Identify the active [nginx config file.](http://nginx.org/en/docs/beginners_guide.html#conf_structure)
-* Use the `--conf-path` flag value from the output in Step 1.
+
+   Use the `--conf-path` flag value from the output in Step 1.
 
 3. Enable a status URL location under the server block.
 
@@ -54,7 +55,6 @@ An EPAgent 9.7.1 or greater is required for the REST interface.
            deny all;
       }
 ```
-
 4. Test the URL.
 
    The output should look similar to this example:
@@ -115,13 +115,13 @@ Here is a sample param.json file with nginx and the EPAgent both running on the 
   Output appears on the console and in the Investigator.
 
 # nginx Metrics
-The nginx Monitor reports these request metrics:
+The nginx Monitor reports these nginx request metrics:
 ```
     nginx|hostname:Average Requests per Connection 
     nginx|hostname:Requests per Interval
 ```
 	
-The nginx Monitor reports these connection metrics:
+The nginx Monitor reports these nginx connection metrics:
 ```
     nginx|hostname|Connections:Active
     nginx|hostname|Connections:Idle
@@ -132,7 +132,7 @@ The nginx Monitor reports these connection metrics:
 ```
 
 # NGINX Plus Metrics
-The nginx Monitor with NGINX Plus reports these metrics:
+The nginx Monitor reports these NGINX Plus metrics:
 ```
     nginx|hostname:Average Requests per Connection 
     nginx|hostname:Requests per Interval
