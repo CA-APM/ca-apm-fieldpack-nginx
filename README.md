@@ -40,7 +40,7 @@ An EPAgent 9.7.1 or greater is required for the REST interface.
 3. Enable a status URL location under the server block.
 
    For example:
-```
+   ```
       #add to existing server block
    
        location /nginx_status {
@@ -54,7 +54,8 @@ An EPAgent 9.7.1 or greater is required for the REST interface.
            allow 127.0.0.1;
            deny all;
       }
-```
+   ```
+   
 4. Test the URL.
 
    The output should look similar to this example:
