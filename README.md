@@ -94,13 +94,6 @@ Edit the **param.json** file to designate:
 
 Here is a sample **param.json** file with nginx and the EPAgent both running on the localhost:
 
-    {
-    	"pollInterval" : 5000,
-    	"url" : "http://127.0.0.1/nginx_status",
-    	"epahost" : "127.0.0.1",
-    	"epaport" : 9191
-    }
-	
 	{
 		"pollInterval" : 5000,
 		"url" : "http://<nginx_host>:<nginx_port>/nginx_status",
