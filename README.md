@@ -8,7 +8,7 @@ Monitors [nginx](http://nginx.org/en/ "nginx") status and reports metrics to the
 From time to time, projects may make compiled releases available.  While source code is always available for complete build, releases serve as a "tag" (numbered release) and often contain prepared packages that are prebuilt and ready to use.  Visit `http://github.com/ca-apm/<repo_name>/releases` for details.
 
 ## APM version
-This has been tested with APM 9.7.1.  An EPAgent 9.7.1 or greater is required for the REST interface.
+This has been tested with APM 10.7  An APMIA (APM Infrastructure Agent) 10.7 or greater is required for the REST interface.
 
 ## Supported third party versions
 `nginx 1.6.3 --with-http_stub_status_module`
@@ -70,7 +70,7 @@ If you test the status URL, the expected output is a JSON stream similar to the 
 A [RESTful CA APM EPAgent](https://wiki.ca.com/display/APMDEVOPS97/EPAgent+Overview) must be installed and the [HTTP port must be set](https://wiki.ca.com/display/APMDEVOPS97/Configure+the+EPAgent+RESTful+Interface).  The host and port running the EPAgent should be reachable from the host that will be running this nginx monitoring script.
 
 ## Dependencies
- - APM EPAgent 9.7.1+
+ - APM Infrastructure Agent 10.7
  - node.js
 
 
@@ -87,6 +87,10 @@ Edit the **param.json** file to designate:
  - The status URL specified in the prerequisites 
  - The interval at which to poll that URL in milliseconds
  - The host and port the CA APM EPAgent is using for HTTP
+ - The Connection type to ATC REST API
+ - The Host and Port to ATC REST API
+ - ATC Token
+ - Proxy info
 
 Here is a sample **param.json** file with nginx and the EPAgent both running on the localhost:
 
@@ -96,6 +100,23 @@ Here is a sample **param.json** file with nginx and the EPAgent both running on 
     	"epahost" : "127.0.0.1",
     	"epaport" : 9191
     }
+	
+	{
+		"pollInterval" : 5000,
+		"url" : "http://<nginx_host>:<nginx_port>/nginx_status",
+		"epahost" : "<apmia_port>",
+		"epaport" : <apmia_port>,
+		"atcconnection" : "http",
+		"atchost" : "<atcapi_host>",
+		"atcport" : <atcapi_port>,
+		"atctoken" : "<atc_token>",
+		"proxytype" : "none",
+		"proxyhost" : "",
+		"proxyport" : "",
+		"refreshtopology" : 86400000,
+		"configversion" : "1.0.0",
+		"agentname" : "<agent_host>|Infrastructure|<agent_name>"
+}
 
 
 # Usage Instructions
