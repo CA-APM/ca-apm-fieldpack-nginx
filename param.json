@@ -1,6 +1,16 @@
 {
 	"pollInterval" : 1000,
-	"url" : "http://127.0.0.1/nginx_status",
-	"epahost" : "127.0.0.1",
-	"epaport" : 9191
+	"url" : "http://<nginx_host>:<nginx_port>/nginx_status",
+	"epahost" : "<apmia_port>",
+	"epaport" : <apmia_port>,
+	"atcconnection" : "http",
+	"atchost" : "<atcapi_host>",
+	"atcport" : <atcapi_port>,
+	"atctoken" : "<atc_token>",
+	"proxytype" : "none",
+    "proxyhost" : "",
+	"proxyport" : "",
+    "refreshtopology" : 86400000,
+    "configversion" : "1.0.0",
+    "agentname" : "<agent_host>|Infrastructure|<agent_name>"
 }

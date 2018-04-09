@@ -37,11 +37,18 @@ defined in the param.json file.  Those metrics will be sent to the epagent
 also specified in that file.
  */
 
+var lastTopology = 0;
+ 
 var _http = require('http');
 var _https = require('https');
 var _os = require('os');
 var _param = require('./param.json');
 var _request = require('request');
+var dns = require('dns');
+
+
+var Util = require('util');
+var Tls = require('tls');
 
 // remember the previous poll data so we can provide proper counts
 var _previous = {};
@@ -65,6 +72,8 @@ if ('strictSSL' in _param && _param.strictSSL === false) {
 
 // if we do not have a source, then set it
 _param.source = _param.source || _os.hostname();
+
+console.info(_os.hostname())
 
 // get the natural difference between a and b
 function diff(a, b) {
@@ -805,8 +814,333 @@ function finish(err) {
 	setTimeout(poll, _param.pollInterval);
 }
 
+
+//Creating nginx node in ATC
+function createATCTopology(err,nginxIp){
+	console.info("-------------------------");
+	console.info("Creating nginx node");
+	console.info("-------------------------");
+	var nginxHost = _param.source;
+	
+	var topologyObj =	{
+		  "graph": {
+			"vertices": [
+			  {
+				"id": "ATC:nginx:"+nginxHost,
+				"layer" : "ATC",
+				"attributes": {
+				  "name": nginxHost,
+				  "type" : "nginx",
+				  "hostname": _param.source,
+				  "ipAddress": nginxIp,
+				  "agent":_param.agentname,
+				  "TTPlugin.sourceID": "ca-apm-fieldpack-nginx",
+				  "TTPlugin.correlation.proxy.1.source.host": nginxHost,
+				  "TTPlugin.correlation.proxy.1.source.ip": nginxIp,
+				  "TTPlugin.correlation.proxy.1.source.port": "80"
+				}
+			  }
+			],
+			"edges" : []
+		  }
+		};
+	jsonObject = JSON.stringify(topologyObj);
+	// prepare the header
+	var postheaders = {
+		'Content-Type' : 'application/json',
+		'Authorization' : 'Bearer '+_param.atctoken,
+		'Content-Length' : Buffer.byteLength(jsonObject, 'utf8')
+	};
+
+
+       if (_param.proxytype=="https"){
+                var agent = new HttpsProxyAgent({
+                        proxyHost: _param.proxyhost,
+                        proxyPort: _param.proxyport
+                });
+                var optionspost = {
+                        host : _param.atchost,
+                        port : _param.atcport,
+                        path : '/apm/appmap/ats/graph/store',
+                        headers: {
+                                Host: _param.atchost
+                        },
+                        method : 'POST',
+                        headers : postheaders,
+                        strictSSL: false,
+                        rejectUnauthorized: false,
+                        agent: agent
+                };
+        } else {
+                if (_param.proxytype=="http"){
+                        var optionspost = {
+                                host : _param.proxyhost,
+                                port : _param.proxyport,
+                                path : _param.atcconnection+'://'+param.atchost+'/apm/appmap/ats/graph/store',
+                                headers: {
+                                        Host: _param.atchost
+                                },
+                                method : 'POST',
+                                headers : postheaders,
+                                strictSSL: false,
+                                rejectUnauthorized: false,
+                        };
+
+                } else {
+
+                        var optionspost = {
+                                host : _param.atchost,
+                                port : _param.atcport,
+                                path : '/apm/appmap/ats/graph/store',
+                                headers: {
+                                        Host: _param.atchost
+				},
+                                method : 'POST',
+                                headers : postheaders,
+                                strictSSL: false,
+                                rejectUnauthorized: false,
+                        };
+                }
+        }
+
+
+
+
+	console.info('Options prepared:');
+	console.info(optionspost);
+	console.info('Do the POST call');
+
+	// do the POST call
+	if (_param.atcconnection == "http"){
+		var reqPost = _http.request(optionspost, function(res) {
+			console.info("-------------------------");
+			console.log("createATCTopology statusCode: ", res.statusCode);
+			console.info("-------------------------");
+			res.on('data', function(d) {
+				console.info('POST result:\n');
+				process.stdout.write(d);
+				console.info('\n\nPOST completed - Topology');
+			});
+		});	
+	}else{
+		var reqPost = _https.request(optionspost, function(res) {
+			console.info("-------------------------");
+			console.log("createATCTopology statusCode: ", res.statusCode);
+			console.info("-------------------------");
+			res.on('data', function(d) {
+				console.info('POST result:\n');
+				process.stdout.write(d);
+				console.info('\n\nPOST completed - Topology');
+			});
+		});	
+	}
+	
+	// write the json data
+	reqPost.write(jsonObject);
+	reqPost.end();
+	reqPost.on('error', function(e) {
+		console.error(e);
+	});
+}
+
+function createATCConfig(){
+	var atcConfig =	{
+		  "id" : "nginx",
+		  "version" : _param.configversion,
+		  "metricSpecifiers" : {
+			"nginx": [
+			  {
+				"metricSpecifier": {
+				  "format": "nginx|<hostname>",
+				  "type": "EXACT"
+				},
+				"agentSpecifier": {
+				  "format": ".*|.*|.*",
+				  "type": "REGEX"
+				},
+				"section": "nginx Metrics",
+				"metricNames": [
+				  "Average Requests per Connection"
+				],
+				"filter": {}
+			  },
+			  {
+				"metricSpecifier": {
+				  "format": "nginx|<hostname>",
+				  "type": "EXACT"
+				},
+				"agentSpecifier": {
+				  "format": ".*|.*|.*",
+				  "type": "REGEX"
+				},
+				"section": "nginx Metrics",
+				"metricNames": [
+				  "Requests per Interval"
+				],
+				"filter": {}
+			  },
+			 {
+				"metricSpecifier": {
+				  "format": "nginx|<hostname>|Connections",
+				  "type": "EXACT"
+				},
+				"agentSpecifier": {
+				  "format": ".*|.*|.*",
+				  "type": "REGEX"
+				},
+				"section": "nginx Metrics",
+				"metricNames": [
+				  "Active"
+				],
+				"filter": {}
+			  },
+			 {
+				"metricSpecifier": {
+				  "format": "nginx|<hostname>|Connections",
+				  "type": "EXACT"
+				},
+				"agentSpecifier": {
+				  "format": ".*|.*|.*",
+				  "type": "REGEX"
+				},
+				"section": "nginx Metrics",
+				"metricNames": [
+				  "Idle"
+				],
+				"filter": {}
+			  }   			  
+			]
+		  },
+		  "metricRootSpecifiers":{
+			  "nginx":[
+                                 {
+                                        "rootSpecifier":"<agent>|Infrastructure|<hostname>",
+                                        "nextLevelRegex":null
+                                 }
+			  ]
+		   },
+		  "alertMappings": {
+			"nginx": [
+			  "nginx|<hostname>"
+			]
+		  }
+	};
+		
+	jsonObject = JSON.stringify(atcConfig);
+	
+	// prepare the header
+	var postheaders = {
+		'Content-Type' : 'application/json',
+		'Authorization' : 'Bearer '+_param.atctoken,
+		'Content-Length' : Buffer.byteLength(jsonObject, 'utf8')
+	};
+
+	if (_param.proxytype=="https"){
+	        var agent = new HttpsProxyAgent({
+        	        proxyHost: _param.proxyhost,
+                	proxyPort: _param.proxyport
+        	});
+		var optionspost = {
+			host : _param.atchost,
+			port : _param.atcport,
+			path : '/apm/appmap/ats/extension/configure',
+  			headers: {
+    				Host: _param.atchost
+  			},
+			method : 'POST',
+			headers : postheaders,
+			strictSSL: false,
+			rejectUnauthorized: false,
+			agent: agent
+		};
+	}
+	else {
+		if (_param.proxytype=="http"){
+                        var optionspost = {
+                                host : _param.proxyhost,
+                                port : _param.proxyport,
+                                path : _param.atcconnection+'://'+param.atchost+'/apm/appmap/ats/extension/configure',
+                                headers: {
+                                        Host: _param.atchost
+                                },
+                                method : 'POST',
+                                headers : postheaders,
+                                strictSSL: false,
+                                rejectUnauthorized: false,
+                        };
+
+		}else{
+
+	                var optionspost = {
+        	                host : _param.atchost,
+                	        port : _param.atcport,
+                        	path : '/apm/appmap/ats/extension/configure',
+	                        headers: {
+        	                        Host: _param.atchost
+                	        },
+                        	method : 'POST',
+	                        headers : postheaders,
+        	                strictSSL: false,
+                	        rejectUnauthorized: false,
+               		};
+		}
+	}
+
+
+	console.info('Options prepared:');
+	console.info(optionspost);
+	console.info('Do the POST call');
+
+	// do the POST call
+	if (_param.atcconnection == "http"){
+		var reqPost = _http.request(optionspost, function(res) {
+			console.info("-------------------------");
+			console.log("statusCode createATCConfig : ", res.statusCode);
+			console.info("-------------------------");
+			res.on('data', function(d) {
+				console.info('POST result:\n');
+				process.stdout.write(d);
+				console.info('\n\nPOST completed - Config');
+			});
+		});	
+	}else{
+		var reqPost = _https.request(optionspost, function(res) {
+			console.info("-------------------------");
+			console.log("statusCode createATCConfig : ", res.statusCode);
+			console.info("-------------------------");
+			res.on('data', function(d) {
+				console.info('POST result:\n');
+				process.stdout.write(d);
+				console.info('\n\nPOST completed - Config');
+			});
+		});	
+	}
+	
+	// write the json data
+	reqPost.write(jsonObject);
+	reqPost.end();
+	reqPost.on('error', function(e) {
+		console.error(e);
+	});
+}
+
+function checkTopology(){
+	var timeDiff = Date.now() - lastTopology;
+	if ( timeDiff > Number(_param.refreshtopology) || lastTopology == 0 ){
+		var err = null;
+		var result = 0;
+		var lk = dns.lookup(_param.source,createATCTopology);
+		lastTopology = Date.now();
+	}
+}
+
+
 // get the stats, format the output and send to stdout
 function poll(cb) {
+
+        //shoul I create a new node ?
+	checkTopology();
+
 	getStats(function(err, stats) {
 		if (err) {
 			return finish(err);
@@ -819,4 +1153,124 @@ function poll(cb) {
 	});
 }
 
+
+
+function HttpsProxyAgent(options) {
+
+    _https.Agent.call(this, options);
+
+    this.proxyHost = options.proxyHost;
+    this.proxyPort = options.proxyPort;
+
+    this.createConnection = function (opts, callback) {
+        var req = _http.request({
+        host: options.proxyHost,
+        port: options.proxyPort,
+        method: 'CONNECT',
+        path: opts.host + ':' + opts.port,
+        headers: {
+            host: opts.host
+        }
+    });
+
+    req.on('connect', function (res, socket, head) {
+    var cts = Tls.connect({
+        host: opts.host,
+        socket: socket
+    }, function () {
+        callback(false, cts);
+    });
+    });
+
+    req.on('error', function (err) {
+        callback(err, null);
+    });
+
+    req.end();
+    }
+}
+
+Util.inherits(HttpsProxyAgent, _https.Agent);
+
+
+HttpsProxyAgent.prototype.addRequest = function (req, options) {
+var name = options.host + ':' + options.port;
+if (options.path) name += ':' + options.path;
+
+if (!this.sockets[name]) this.sockets[name] = [];
+
+if (this.sockets[name].length < this.maxSockets) {
+    this.createSocket(name, options.host, options.port, options.path, req, function (socket) {
+        req.onSocket(socket);
+    });
+} else {
+    if (!this.requests[name])
+    this.requests[name] = [];
+    this.requests[name].push(req);
+}
+};
+
+HttpsProxyAgent.prototype.createSocket = function (name, host, port, localAddress, req, callback) {
+    var self = this;
+    var options = Util._extend({}, self.options);
+    options.port = port;
+    options.host = host;
+    options.localAddress = localAddress;
+
+    options.servername = host;
+    if (req) {
+        var hostHeader = req.getHeader('host');
+        if (hostHeader)
+            options.servername = hostHeader.replace(/:.*$/, '');
+    }
+
+    self.createConnection(options, function (err, s) {
+    if (err) {
+        err.message += ' while connecting to HTTP(S) proxy server ' + self.proxyHost + ':' + self.proxyPort;
+
+        if (req)
+            req.emit('error', err);
+        else
+            throw err;
+
+    return;
+}
+
+if (!self.sockets[name]) self.sockets[name] = [];
+
+self.sockets[name].push(s);
+
+var onFree = function () {
+    self.emit('free', s, host, port, localAddress);
+};
+
+var onClose = function (err) {
+    self.removeSocket(s, name, host, port, localAddress);
+};
+
+var onRemove = function () {
+    self.removeSocket(s, name, host, port, localAddress);
+    s.removeListener('close', onClose);
+    s.removeListener('free', onFree);
+    s.removeListener('agentRemove', onRemove);
+};
+
+s.on('free', onFree);
+s.on('close', onClose);
+s.on('agentRemove', onRemove);
+
+callback(s);
+});
+};
+
+
+/* MAIN PROCESS */
+
+createATCConfig();
+
 poll();
+	
+
+
+	
+
