@@ -1,16 +1,17 @@
 {
 	"pollInterval" : 1000,
-	"url" : "http://<nginx_host>:<nginx_port>/nginx_status",
-	"epahost" : "<apmia_port>",
-	"epaport" : <apmia_port>,
+	"url" : "http://192.168.13.140/nginx_status",
+	"epahost" : "192.168.13.140",
+	"epaport" : 10010,
 	"atcconnection" : "http",
-	"atchost" : "<atcapi_host>",
-	"atcport" : <atcapi_port>,
-	"atctoken" : "<atc_token>",
+	"atchost" : "192.168.13.140",
+	"atcport" : 8085,
+	"atctoken" : "81d8d5da-3852-4d26-a156-6a8ce563d4a3",
 	"proxytype" : "none",
-    "proxyhost" : "",
+        "proxyhost" : "",
 	"proxyport" : "",
-    "refreshtopology" : 86400000,
-    "configversion" : "1.0.0",
-    "agentname" : "<agent_host>|Infrastructure|<agent_name>"
+        "refreshtopology" : 86400000,
+        "configversion" : "4.0.0",
+        "agentname" : "apm107|Infrastructure|Agentx"
+
 }

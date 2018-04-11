@@ -73,8 +73,6 @@ if ('strictSSL' in _param && _param.strictSSL === false) {
 // if we do not have a source, then set it
 _param.source = _param.source || _os.hostname();
 
-console.info(_os.hostname())
-
 // get the natural difference between a and b
 function diff(a, b) {
 	if (a === null || b === null) {
@@ -746,18 +744,20 @@ function outputStats(stats, cb) {
 		headers : postheaders
 	};
 
+	/*
 	console.info('Options prepared:');
 	console.info(optionspost);
 	console.info('Do the POST call');
+	*/
 
 	// do the POST call
 	var reqPost = _http.request(optionspost, function(res) {
-		console.log("statusCode: ", res.statusCode);
+		//console.log("statusCode: ", res.statusCode);
 
 		res.on('data', function(d) {
-			console.info('POST result:\n');
-			process.stdout.write(d);
-			console.info('\n\nPOST completed');
+			//console.log('POST result:\n');
+			//process.stdout.write(d);
+			//console.log('\n\nPOST completed');
 		});
 	});
 
@@ -814,12 +814,10 @@ function finish(err) {
 	setTimeout(poll, _param.pollInterval);
 }
 
-
-//Creating nginx node in ATC
+/*
+ * Creates the NGINX node in the map
+ */
 function createATCTopology(err,nginxIp){
-	console.info("-------------------------");
-	console.info("Creating nginx node");
-	console.info("-------------------------");
 	var nginxHost = _param.source;
 	
 	var topologyObj =	{
@@ -829,7 +827,7 @@ function createATCTopology(err,nginxIp){
 				"id": "ATC:nginx:"+nginxHost,
 				"layer" : "ATC",
 				"attributes": {
-				  "name": nginxHost,
+				  "name": "NGINX-"+nginxHost,
 				  "type" : "nginx",
 				  "hostname": _param.source,
 				  "ipAddress": nginxIp,
@@ -845,96 +843,22 @@ function createATCTopology(err,nginxIp){
 		  }
 		};
 	jsonObject = JSON.stringify(topologyObj);
-	// prepare the header
 	var postheaders = {
 		'Content-Type' : 'application/json',
 		'Authorization' : 'Bearer '+_param.atctoken,
 		'Content-Length' : Buffer.byteLength(jsonObject, 'utf8')
 	};
 
+       var optionspost = getOptionspost('/apm/appmap/ats/graph/store',postheaders)
 
-       if (_param.proxytype=="https"){
-                var agent = new HttpsProxyAgent({
-                        proxyHost: _param.proxyhost,
-                        proxyPort: _param.proxyport
-                });
-                var optionspost = {
-                        host : _param.atchost,
-                        port : _param.atcport,
-                        path : '/apm/appmap/ats/graph/store',
-                        headers: {
-                                Host: _param.atchost
-                        },
-                        method : 'POST',
-                        headers : postheaders,
-                        strictSSL: false,
-                        rejectUnauthorized: false,
-                        agent: agent
-                };
-        } else {
-                if (_param.proxytype=="http"){
-                        var optionspost = {
-                                host : _param.proxyhost,
-                                port : _param.proxyport,
-                                path : _param.atcconnection+'://'+param.atchost+'/apm/appmap/ats/graph/store',
-                                headers: {
-                                        Host: _param.atchost
-                                },
-                                method : 'POST',
-                                headers : postheaders,
-                                strictSSL: false,
-                                rejectUnauthorized: false,
-                        };
-
-                } else {
-
-                        var optionspost = {
-                                host : _param.atchost,
-                                port : _param.atcport,
-                                path : '/apm/appmap/ats/graph/store',
-                                headers: {
-                                        Host: _param.atchost
-				},
-                                method : 'POST',
-                                headers : postheaders,
-                                strictSSL: false,
-                                rejectUnauthorized: false,
-                        };
-                }
-        }
-
-
-
-
+	/*
 	console.info('Options prepared:');
 	console.info(optionspost);
 	console.info('Do the POST call');
+	*/
 
-	// do the POST call
-	if (_param.atcconnection == "http"){
-		var reqPost = _http.request(optionspost, function(res) {
-			console.info("-------------------------");
-			console.log("createATCTopology statusCode: ", res.statusCode);
-			console.info("-------------------------");
-			res.on('data', function(d) {
-				console.info('POST result:\n');
-				process.stdout.write(d);
-				console.info('\n\nPOST completed - Topology');
-			});
-		});	
-	}else{
-		var reqPost = _https.request(optionspost, function(res) {
-			console.info("-------------------------");
-			console.log("createATCTopology statusCode: ", res.statusCode);
-			console.info("-------------------------");
-			res.on('data', function(d) {
-				console.info('POST result:\n');
-				process.stdout.write(d);
-				console.info('\n\nPOST completed - Topology');
-			});
-		});	
-	}
-	
+        var reqPost = getRegPost(optionspost);
+
 	// write the json data
 	reqPost.write(jsonObject);
 	reqPost.end();
@@ -943,6 +867,10 @@ function createATCTopology(err,nginxIp){
 	});
 }
 
+
+/*
+ * Configs nginx node on the map
+ */
 function createATCConfig(){
 	var atcConfig =	{
 		  "id" : "nginx",
@@ -1014,7 +942,7 @@ function createATCConfig(){
 		  "metricRootSpecifiers":{
 			  "nginx":[
                                  {
-                                        "rootSpecifier":"<agent>|Infrastructure|<hostname>",
+                                        "rootSpecifier":"<agent>|nginx|<hostname>",
                                         "nextLevelRegex":null
                                  }
 			  ]
@@ -1028,94 +956,22 @@ function createATCConfig(){
 		
 	jsonObject = JSON.stringify(atcConfig);
 	
-	// prepare the header
 	var postheaders = {
 		'Content-Type' : 'application/json',
 		'Authorization' : 'Bearer '+_param.atctoken,
 		'Content-Length' : Buffer.byteLength(jsonObject, 'utf8')
 	};
 
-	if (_param.proxytype=="https"){
-	        var agent = new HttpsProxyAgent({
-        	        proxyHost: _param.proxyhost,
-                	proxyPort: _param.proxyport
-        	});
-		var optionspost = {
-			host : _param.atchost,
-			port : _param.atcport,
-			path : '/apm/appmap/ats/extension/configure',
-  			headers: {
-    				Host: _param.atchost
-  			},
-			method : 'POST',
-			headers : postheaders,
-			strictSSL: false,
-			rejectUnauthorized: false,
-			agent: agent
-		};
-	}
-	else {
-		if (_param.proxytype=="http"){
-                        var optionspost = {
-                                host : _param.proxyhost,
-                                port : _param.proxyport,
-                                path : _param.atcconnection+'://'+param.atchost+'/apm/appmap/ats/extension/configure',
-                                headers: {
-                                        Host: _param.atchost
-                                },
-                                method : 'POST',
-                                headers : postheaders,
-                                strictSSL: false,
-                                rejectUnauthorized: false,
-                        };
+	var optionspost = getOptionspost('/apm/appmap/ats/extension/configure',postheaders)
 
-		}else{
-
-	                var optionspost = {
-        	                host : _param.atchost,
-                	        port : _param.atcport,
-                        	path : '/apm/appmap/ats/extension/configure',
-	                        headers: {
-        	                        Host: _param.atchost
-                	        },
-                        	method : 'POST',
-	                        headers : postheaders,
-        	                strictSSL: false,
-                	        rejectUnauthorized: false,
-               		};
-		}
-	}
-
-
+	/*
 	console.info('Options prepared:');
 	console.info(optionspost);
 	console.info('Do the POST call');
+	*/
 
-	// do the POST call
-	if (_param.atcconnection == "http"){
-		var reqPost = _http.request(optionspost, function(res) {
-			console.info("-------------------------");
-			console.log("statusCode createATCConfig : ", res.statusCode);
-			console.info("-------------------------");
-			res.on('data', function(d) {
-				console.info('POST result:\n');
-				process.stdout.write(d);
-				console.info('\n\nPOST completed - Config');
-			});
-		});	
-	}else{
-		var reqPost = _https.request(optionspost, function(res) {
-			console.info("-------------------------");
-			console.log("statusCode createATCConfig : ", res.statusCode);
-			console.info("-------------------------");
-			res.on('data', function(d) {
-				console.info('POST result:\n');
-				process.stdout.write(d);
-				console.info('\n\nPOST completed - Config');
-			});
-		});	
-	}
-	
+	var reqPost = getRegPost(optionspost);
+
 	// write the json data
 	reqPost.write(jsonObject);
 	reqPost.end();
@@ -1132,25 +988,6 @@ function checkTopology(){
 		var lk = dns.lookup(_param.source,createATCTopology);
 		lastTopology = Date.now();
 	}
-}
-
-
-// get the stats, format the output and send to stdout
-function poll(cb) {
-
-        //shoul I create a new node ?
-	checkTopology();
-
-	getStats(function(err, stats) {
-		if (err) {
-			return finish(err);
-		}
-		if (!stats) {
-			return finish('Could not parse Nginx analytics');
-		}
-
-		outputStats(stats, finish);
-	});
 }
 
 
@@ -1264,7 +1101,91 @@ callback(s);
 };
 
 
+function getRegPost(optionspost){
+        if (_param.atcconnection == "http"){
+                var reqPost = _http.request(optionspost, function(res) {
+                        console.log("-------------------------");
+                        console.log("statusCode  : ", res.statusCode);
+                        console.log("-------------------------");
+                        res.on('data', function(d) {
+                                console.info('POST result:\n');
+                                process.stdout.write(d);
+                                console.info('\n\nPOST completed - Config');
+                        });
+                });
+        }else{
+                var reqPost = _https.request(optionspost, function(res) {
+                        console.log("-------------------------");
+                        console.log("statusCode : ", res.statusCode);
+                        console.log("-------------------------");
+                        res.on('data', function(d) {
+                                console.log('POST result:\n');
+                                process.stdout.write(d);
+                                console.log('\n\nPOST completed - Config');
+                        });
+                });
+        }
+	return reqPost;
+}
+
+
+function getOptionspost(atcUrl,postheaders) {
+
+	var baseOptions = {
+			host : _param.atchost,
+			port : _param.atcport,
+			path : atcUrl,
+			headers: {
+					Host: _param.atchost
+			},
+			method : 'POST',
+			headers : postheaders,
+			strictSSL: false,
+			rejectUnauthorized: false,
+	};
+	
+	if (_param.proxytype=="https"){
+		var agent = new HttpsProxyAgent({
+				proxyHost: _param.proxyhost,
+				proxyPort: _param.proxyport
+		});	
+		baseOptions.agent = agent
+	} else {
+		if (_param.proxytype=="http"){
+			baseOptions.path = _param.atcconnection+'://'+param.atchost+atcUrl
+		} 
+	}
+	
+	return baseOptions;
+}
+
+
+// get the stats, format the output and send to stdout
+function poll(cb) {
+
+        //shoul I create a new node ?
+        checkTopology();
+
+        getStats(function(err, stats) {
+                if (err) {
+                        return finish(err);
+                }
+                if (!stats) {
+                        return finish('Could not parse Nginx analytics');
+                }
+
+                outputStats(stats, finish);
+        });
+
+}
+
+
 /* MAIN PROCESS */
+
+console.info("----------------------------------------------");
+console.info("NGINX Monitor started...");
+console.info("----------------------------------------------");
+
 
 createATCConfig();
 
