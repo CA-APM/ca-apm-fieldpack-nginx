@@ -1,6 +1,17 @@
 {
 	"pollInterval" : 1000,
-	"url" : "http://127.0.0.1/nginx_status",
-	"epahost" : "127.0.0.1",
-	"epaport" : 9191
+	"url" : "http://192.168.13.140/nginx_status",
+	"epahost" : "192.168.13.140",
+	"epaport" : 10010,
+	"atcconnection" : "http",
+	"atchost" : "192.168.13.140",
+	"atcport" : 8085,
+	"atctoken" : "81d8d5da-3852-4d26-a156-6a8ce563d4a3",
+	"proxytype" : "none",
+        "proxyhost" : "",
+	"proxyport" : "",
+        "refreshtopology" : 86400000,
+        "configversion" : "4.0.0",
+        "agentname" : "apm107|Infrastructure|Agentx"
+
 }
