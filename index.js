@@ -19,9 +19,12 @@ location /nginx_status {
     # do not log status polling
     access_log off;
  
-    # restrict access to local only
+    # restrict access to local only (if not remote)
     allow 127.0.0.1;
     deny all;
+
+    # return hostname in response as a header
+    add_header Hostname $hostname;
    }
 } 
 
@@ -1180,6 +1183,25 @@ function poll(cb) {
 }
 
 
+// get the real hostname where Nginx is running, if defined
+function init() {
+        _request
+                .get(_param.url,
+                     _httpOptions,
+                     function(err, resp, body) {
+			 if (resp.statusCode === 200) {
+                         	if (resp.statusCode === 200 && typeof resp.headers['hostname'] !== 'undefined' && resp.headers['hostname']) {
+                               		_param.source = resp.headers['hostname'];
+                                	console.log('_param.source redefined:');
+                                	console.log(_param.source);
+                         	} else {
+					console.log('hostname header is undefined');
+				} 
+			 }
+                         poll();
+                     });
+}
+
 /* MAIN PROCESS */
 
 console.info("----------------------------------------------");
@@ -1189,7 +1211,8 @@ console.info("----------------------------------------------");
 
 createATCConfig();
 
-poll();
+init();
+//poll();
 	
 
 
